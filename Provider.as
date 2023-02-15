@@ -49,7 +49,7 @@ namespace Ticker {
         }
 
         bool hasTickerItemProvider(const string &in identifier) {
-            for (uint i = 0; i < taskbarProviders.Length; i++) {
+            for (uint i = 0; i < itemProviders.Length; i++) {
                 if (itemProviders[i].getID() == identifier) {
                     return true;
                 }
@@ -58,13 +58,13 @@ namespace Ticker {
         }
 
         TickerItemProvider@ getTickerItemProvider(const string &in identifier) {
-            for (uint i = 0; i < taskbarProviders.Length; i++) {
+            for (uint i = 0; i < itemProviders.Length; i++) {
                 if (itemProviders[i].getID() == identifier) {
                     return itemProviders[i];
                 }
             }
             throw("Could not find provider, please check with hasProvider() first!");
-            NullTickerItem thisShouldntEverHappenButItWontCompile;
+            NullTickerItemProvider thisShouldntEverHappenButItWontCompile;
             return thisShouldntEverHappenButItWontCompile;
         }
 

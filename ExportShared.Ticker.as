@@ -19,15 +19,23 @@ namespace Ticker {
             void OnItemClick() {}
         }
 
-        shared interface TickerItemProvider {
-            string getID();
+        shared interface TickerItem {
             string getItemText();
             void OnItemHovered();
             void OnItemClick();
         }
 
-        shared class NullTickerItem : TickerItemProvider {
+        shared interface TickerItemProvider {
+            string getID();
+            TickerItem@[] getItems();
+        }
+
+        shared class NullTickerItemProvider : TickerItemProvider {
             string getID() { return "Ticker/NullTickerItem"; }
+            TickerItem@[] getItems() { TickerItem@[] ti; return ti; }
+        }
+
+        shared class BaseTickerItem : TickerItem {
             string getItemText() { return ""; }
             void OnItemHovered() {}
             void OnItemClick() {}
