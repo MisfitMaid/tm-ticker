@@ -1,0 +1,10 @@
+[meta]
+name = "Record Ticker"
+author = "MisfitMaid"
+category = "Overlay"
+version = "0.1"
+siteid = 332
+
+[script]
+dependencies = ["NadeoServices"]
+module = "ticker"
