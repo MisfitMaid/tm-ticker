@@ -8,6 +8,7 @@ namespace Ticker {
 
 
     uint64 initTime = 0;
+    uint64 animStartTime = 0;
     uint64 tickerOffsetTime = 0;
     uint64 lastFrameTime = 0;
     uint64 lastRefresh = 0;
@@ -17,9 +18,12 @@ namespace Ticker {
 
     void init() {
         initTime = Time::Now;
+        animStartTime = Time::Now;
         @cursedTimeDB = SQLite::Database(":memory:");
         if (enableComponentClock) {
             registerTaskbarProviderAddon(Clock());
+            registerTaskbarProviderAddon(COTD());
+
             registerTickerItemProviderAddon(TMioCampaignLeaderboardProvider());
         }
     }
@@ -119,26 +123,21 @@ namespace Ticker {
 
         uint startMS = 5000;
         uint animMS = 250;
-        if (initTime + startMS > Time::Now) {
+        if (animStartTime + startMS > Time::Now) {
             opTag += opTagPlus;
-        } else if (initTime + startMS + animMS > Time::Now) {
+        } else if (animStartTime + startMS + animMS > Time::Now) {
             uint len = opTagPlus.Length;
-            float percentThroughAnim = 1.f - float(Time::Now - initTime - startMS) / float(animMS);
+            float percentThroughAnim = 1.f - float(Time::Now - animStartTime - startMS) / float(animMS);
             opTag += opTagPlus.SubStr(0, uint(float(len)*percentThroughAnim));
         }
 
         vec2 opTagWidth = Draw::MeasureString(opTag);
         vec4 opTagBG(tickerPos.xy, opTagWidth + spacing*2);
 
+        dl.AddRectFilled(opTagBG, bgCol);
+        dl.AddText(opTagBG.xy + spacing, textDisabledCol, opTag);
         if (IsHovered(opTagBG)) {
-            dl.AddRectFilled(opTagBG, bgHoveredCol);
-            dl.AddText(opTagBG.xy + spacing, textHoveredCol, opTag);
-            UI::BeginTooltip();
-            UI::Text("https://trackmania.io");
-            UI::EndTooltip();
-        } else {
-            dl.AddRectFilled(opTagBG, bgCol);
-            dl.AddText(opTagBG.xy + spacing, textDisabledCol, opTag);
+            animStartTime = Time::Now;
         }
         
 
@@ -153,25 +152,18 @@ namespace Ticker {
         for (uint i = 0; i < taskbars.Length; i++) {
             string content = taskbars[i].getItemText();
             vec2 cWid = Draw::MeasureString(content) + spacing*2;
-            taskbarOffset = taskbarOffset - cWid;
-            vec4 taskbarBG(taskbarOffset, cWid);
+            taskbarOffset = vec2(taskbarOffset.x - cWid.x, taskbarOffset.y);
+            vec4 taskbarBG(taskbarOffset - vec2(0, cWid.y), cWid);
             
             dl.AddRectFilled(taskbarBG + vec4(-10, 0, 10, 0), bgCol);
             dl.AddText(taskbarBG.xy + spacing, textDisabledCol, content);
+            if (IsHovered(taskbarBG)) {
+                taskbars[i].OnItemHovered();
+            }
+            if (InvisibleButton(taskbarBG)) {
+                taskbars[i].OnItemClick();
+            }
         }
-    }
-
-    float drawTickerText(UI::DrawList@ dl, const string &in text, float offset, float gapSize, vec4 tickerTextPos, vec2 spacing, vec4 textCol) {
-        float myWidth = Draw::MeasureString(text).x + spacing.x*2 + gapSize;
-        float myPos = tickerTextPos.z - myWidth - offset;
-        dl.AddText(vec2(myPos, tickerTextPos.y)+spacing, textCol, text);
-        return offset - myWidth;
-    }
-
-    float getTickerOffset(float rate, float width) {
-        float offset = float(Time::Now) * rate;
-        trace((offset % width));
-        return width + (offset % width);
     }
 
     /**
@@ -220,4 +212,31 @@ namespace Ticker {
         return st.GetColumnInt64("x");
     }
 
+    uint getFrenchOffset(uint64 inTime) {
+        uint month = Text::ParseUInt(Time::FormatStringUTC("%m", inTime));
+        // this is a little cursed
+        if (month > 3 && month < 10) {
+            return 7200;
+        }
+        if (month == 1 || month > 10) {
+            return 3600;
+        }
+        
+        uint switchDay;
+        int64 firstOfMonth = ParseTime(Time::FormatStringUTC("%Y", inTime) + "-" + Time::FormatStringUTC("%m", inTime) + "-01");
+        uint dow = Text::ParseUInt(Time::FormatStringUTC("%w", firstOfMonth));
+        if (dow == 6) {
+            switchDay = 30;
+        } else {
+            switchDay = (6-dow)+23;
+        }
+
+        bool isPast = switchDay < Text::ParseUInt(Time::FormatStringUTC("%d", inTime));
+
+        if ((isPast && month == 3) || (!isPast && month == 10)) {
+            return 7200;
+        } else {
+            return 3600;
+        }
+    }
 }
