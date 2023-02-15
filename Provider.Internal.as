@@ -5,37 +5,39 @@
  */
 
 namespace Ticker {
-        class Clock : TaskbarProvider {
-            string getID() { return "Ticker/Clock"; }
-            string getItemText() { 
-                return Time::FormatString(clockFormat);
-            }
-            void OnItemHovered() {}
-            void OnItemClick() {}
+    class Clock : TaskbarProvider {
+        string getID() { return "Ticker/Clock"; }
+        string getItemText() { 
+            return Time::FormatString(clockFormat);
         }
+        void OnItemHovered() {}
+        void OnItemClick() {}
+    }
 
-        class TestTickerItemProvider : TickerItemProvider {
-            string getID() { return "Ticker/TestTickerItem"; }
-            TickerItem@[] getItems() {
-                TickerItem@[] ti;
-                
-                for (uint i = 0; i < 16; i++) {
-                    ti.InsertLast(TestTickerItem(i));
-                }
-
-                return ti;
-                }
-        }
-
-        class TestTickerItem : BaseTickerItem {
-            uint myNum;
-            TestTickerItem() {}
-            TestTickerItem(uint num) {
-                myNum = num;
+    class TestTickerItemProvider : TickerItemProvider {
+        string getID() { return "Ticker/TestTickerItem"; }
+        TickerItem@[] getItems() {
+            TickerItem@[] ti;
+            
+            for (uint i = 0; i < 16; i++) {
+                ti.InsertLast(TestTickerItem(i));
             }
 
-            string getItemText() override {
-                return "Test " + Text::Format("%d", myNum);
-            }
+            return ti;
         }
+
+        void OnUpdate() {}
+    }
+
+    class TestTickerItem : BaseTickerItem {
+        uint myNum;
+        TestTickerItem() {}
+        TestTickerItem(uint num) {
+            myNum = num;
+        }
+
+        string getItemText() override {
+            return "Test " + Text::Format("%d", myNum);
+        }
+    }
 }

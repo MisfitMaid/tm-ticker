@@ -10,6 +10,7 @@ namespace Ticker {
     uint64 initTime = 0;
     uint64 tickerOffsetTime = 0;
     uint64 lastFrameTime = 0;
+    uint64 lastRefresh = 0;
     TickerItem@[] tickerItems;
 
     void init() {
@@ -22,8 +23,15 @@ namespace Ticker {
 
 
     void step() {
-        if (!tickerItems.IsEmpty()) tickerItems.Resize(0);
         TickerItemProvider@[]@ tips = getAllTickerItemProviders();
+        if (lastRefresh == 0 || lastRefresh + (refreshTime * 1000) > Time::Now) {
+            lastRefresh = Time::Now;
+            for (uint i = 0; i < tips.Length; i++) {
+                tips[i].OnUpdate();
+            }
+        }
+
+        if (!tickerItems.IsEmpty()) tickerItems.Resize(0);
         for (uint i = 0; i < tips.Length; i++) {
             TickerItem@[] ti = tips[i].getItems();
             for (uint ii = 0; ii < ti.Length; ii++) {

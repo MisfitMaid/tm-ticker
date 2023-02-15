@@ -15,6 +15,9 @@ namespace Ticker {
     [Setting category="Display" name="Show when driving" description="Toggle on to show even while driving"]
     bool showOnDriving = false;
 
+    [Setting category="Display" name="Refresh time (sec)" description="How often to poll for updated items"]
+    uint refreshTime = 60;
+
     [Setting category="Components" name="Clock" description="Shows the current time"]
     bool enableComponentClock = true;
 

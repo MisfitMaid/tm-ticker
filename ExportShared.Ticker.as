@@ -28,11 +28,13 @@ namespace Ticker {
         shared interface TickerItemProvider {
             string getID();
             TickerItem@[] getItems();
+            void OnUpdate();
         }
 
         shared class NullTickerItemProvider : TickerItemProvider {
             string getID() { return "Ticker/NullTickerItem"; }
             TickerItem@[] getItems() { TickerItem@[] ti; return ti; }
+            void OnUpdate() {}
         }
 
         shared class BaseTickerItem : TickerItem {
