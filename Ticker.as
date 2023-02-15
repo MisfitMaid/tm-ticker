@@ -18,13 +18,14 @@ namespace Ticker {
         if (enableComponentClock) {
             registerTaskbarProviderAddon(Clock());
             registerTickerItemProviderAddon(TestTickerItemProvider());
+            registerTickerItemProviderAddon(TMioCampaignLeaderboardProvider());
         }
     }
 
 
     void step() {
         TickerItemProvider@[]@ tips = getAllTickerItemProviders();
-        if (lastRefresh == 0 || lastRefresh + (refreshTime * 1000) > Time::Now) {
+        if (lastRefresh == 0 || lastRefresh + (refreshTime * 1000) < Time::Now) {
             lastRefresh = Time::Now;
             for (uint i = 0; i < tips.Length; i++) {
                 tips[i].OnUpdate();
@@ -182,6 +183,24 @@ namespace Ticker {
             mousePos = vec2(x, y);
         }
         _mouseDown = down;
+    }
+
+    dictionary cursedTimeParserCache;
+    /**
+     * yes i am aware this is cursed.
+     */
+    uint64 ParseTime(const string &in inTime) {
+        if (cursedTimeParserCache.Exists(inTime)) {
+            return uint64(cursedTimeParserCache[inTime]);
+        }
+
+        auto req = Net::HttpGet("https://syl.ae/parseTime/?t="+inTime);
+        if (!req.Finished()) yield();
+
+        uint64 ts = Text::ParseUInt64(req.String());
+        cursedTimeParserCache[inTime] = ts;
+
+        return ts;
     }
 
 }
