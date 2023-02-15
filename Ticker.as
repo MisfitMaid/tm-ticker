@@ -13,11 +13,13 @@ namespace Ticker {
     uint64 lastRefresh = 0;
     TickerItem@[] tickerItems;
 
+    SQLite::Database@ cursedTimeDB;
+
     void init() {
         initTime = Time::Now;
+        @cursedTimeDB = SQLite::Database(":memory:");
         if (enableComponentClock) {
             registerTaskbarProviderAddon(Clock());
-            registerTickerItemProviderAddon(TestTickerItemProvider());
             registerTickerItemProviderAddon(TMioCampaignLeaderboardProvider());
         }
     }
@@ -83,9 +85,30 @@ namespace Ticker {
         if (tickerItems.Length > 0) {
             uint item = 0;
             while (offset > 0.f) {
+                // i hate everything about this math
                 TickerItem@ ti = tickerItems[item%tickerItems.Length];
                 string tiText = ti.getItemText();
-                offset = drawTickerText(dl, tiText, offset, 96.f, tickerTextPos, spacing, textCol);
+                vec2 myWidth = Draw::MeasureString(tiText) + spacing*2;
+                float myPos = tickerTextPos.z - myWidth.x - offset - 96.f;
+                vec2 finalPos = vec2(myPos, tickerTextPos.y)+spacing;
+                dl.AddText(finalPos, textCol, tiText);
+
+                vec4 rect(finalPos, myWidth);
+
+                if (IsHovered(rect)) {
+                    dl.AddRectFilled(rect, bgHoveredCol);
+                    dl.AddText(rect.xy, textHoveredCol, tiText);
+                    ti.OnItemHovered();
+                } else {
+                    dl.AddText(rect.xy, textCol, tiText);
+                }
+                
+
+                if (InvisibleButton(rect)) {
+                    ti.OnItemClick();
+                }
+
+                offset -= myWidth.x + 96.f;
                 item++;
             }
         }
@@ -185,22 +208,16 @@ namespace Ticker {
         _mouseDown = down;
     }
 
-    dictionary cursedTimeParserCache;
     /**
      * yes i am aware this is cursed.
      */
-    uint64 ParseTime(const string &in inTime) {
-        if (cursedTimeParserCache.Exists(inTime)) {
-            return uint64(cursedTimeParserCache[inTime]);
-        }
-
-        auto req = Net::HttpGet("https://syl.ae/parseTime/?t="+inTime);
-        if (!req.Finished()) yield();
-
-        uint64 ts = Text::ParseUInt64(req.String());
-        cursedTimeParserCache[inTime] = ts;
-
-        return ts;
+    int64 ParseTime(const string &in inTime) {
+        auto st = cursedTimeDB.Prepare("SELECT unixepoch(?) as x");
+        st.Bind(1, inTime);
+        st.Execute();
+        st.NextRow();
+        st.NextRow();
+        return st.GetColumnInt64("x");
     }
 
 }

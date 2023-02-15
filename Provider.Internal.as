@@ -13,31 +13,4 @@ namespace Ticker {
         void OnItemHovered() {}
         void OnItemClick() {}
     }
-
-    class TestTickerItemProvider : TickerItemProvider {
-        string getID() { return "Ticker/TestTickerItem"; }
-        TickerItem@[] getItems() {
-            TickerItem@[] ti;
-            
-            for (uint i = 0; i < 16; i++) {
-                ti.InsertLast(TestTickerItem(i));
-            }
-
-            return ti;
-        }
-
-        void OnUpdate() {}
-    }
-
-    class TestTickerItem : BaseTickerItem {
-        uint myNum;
-        TestTickerItem() {}
-        TestTickerItem(uint num) {
-            myNum = num;
-        }
-
-        string getItemText() override {
-            return "Test " + Text::Format("%d", myNum);
-        }
-    }
 }
