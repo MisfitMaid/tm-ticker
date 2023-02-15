@@ -15,3 +15,7 @@ void OnSettingsChanged() { Ticker::init(); }
 void OnEnabled() { Ticker::init(); }
 
 void Render() { Ticker::render(); }
+
+void OnMouseButton(bool down, int button, int x, int y) {
+    Ticker::OnMouseButton(down, button, x, y);
+}

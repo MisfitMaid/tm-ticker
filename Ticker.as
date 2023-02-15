@@ -8,6 +8,8 @@ namespace Ticker {
 
 
     uint64 initTime = 0;
+    uint64 tickerOffsetTime = 0;
+    uint64 lastFrameTime = 0;
     TickerItem@[] tickerItems;
 
     void init() {
@@ -31,15 +33,26 @@ namespace Ticker {
     }
 
     void render() {
+        uint dt = Time::Now - lastFrameTime;
+        lastFrameTime = Time::Now;
+
         if (!showOnHiddenOverlay && !UI::IsOverlayShown()) {
             return;
         }
+        auto cmap = GetApp().Network.ClientManiaAppPlayground;
+        if (!showOnDriving && GetApp().RootMap !is null) {
+            if (cmap.UI.UISequence == CGamePlaygroundUIConfig::EUISequence::Playing && !GetApp().Network.PlaygroundClientScriptAPI.IsInGameMenuDisplayed) {
+                return;
+            }
+        }
+
         UI::DrawList@ dl = UI::GetBackgroundDrawList();
 
         vec4 bgCol = UI::GetStyleColor(UI::Col::MenuBarBg);
-        vec4 bgColAlt = UI::GetStyleColor(UI::Col::TitleBg);
+        vec4 bgHoveredCol = UI::GetStyleColor(UI::Col::ButtonHovered);
         vec4 textCol = UI::GetStyleColor(UI::Col::Text);
         vec4 textDisabledCol = UI::GetStyleColor(UI::Col::TextDisabled);
+        vec4 textHoveredCol = UI::GetStyleColor(UI::Col::Text);
         vec2 spacing = UI::GetStyleVarVec2(UI::StyleVar::ItemInnerSpacing);
 
         float height = UI::GetTextLineHeight() + 2*spacing.y;
@@ -50,30 +63,21 @@ namespace Ticker {
 
         dl.AddRectFilled(tickerPos, bgCol);
 
-        // draw ticker here
-        vec4 tickerTextPos = tickerPos * vec4(-0.5, 1, 2, 1);
-        float offset = getTickerOffset(0.05f, tickerTextPos.z);
+        if (!IsHovered(tickerPos)) {
+            tickerOffsetTime += dt;
+        }
 
-        string[] items;
-        items.InsertLast("Test 1");
-        items.InsertLast("Test 2");
-        items.InsertLast("Test 3");
-        items.InsertLast("Test 4");
-        items.InsertLast("Test 5");
-        items.InsertLast("Test 6");
-        items.InsertLast("Test 7");
-        items.InsertLast("Test 8");
-        items.InsertLast("Test 9");
-        items.InsertLast("Test 10");
-        items.InsertLast("Test 11");
+        // draw ticker here
+        vec4 tickerTextPos = tickerPos * vec4(1, 1, 1.5, 1);
+        float offset = tickerTextPos.z + ((0.05f * tickerOffsetTime) % tickerTextPos.z);
 
         if (tickerItems.Length > 0) {
             uint item = 0;
             while (offset > 0.f) {
-                item++;
                 TickerItem@ ti = tickerItems[item%tickerItems.Length];
                 string tiText = ti.getItemText();
                 offset = drawTickerText(dl, tiText, offset, 96.f, tickerTextPos, spacing, textCol);
+                item++;
             }
         }
 
@@ -94,8 +98,21 @@ namespace Ticker {
         vec2 opTagWidth = Draw::MeasureString(opTag);
         vec4 opTagBG(tickerPos.xy, opTagWidth + spacing*2);
 
-        dl.AddRectFilled(opTagBG, bgCol);
-        dl.AddText(opTagBG.xy + spacing, textDisabledCol, opTag);
+        if (IsHovered(opTagBG)) {
+            dl.AddRectFilled(opTagBG, bgHoveredCol);
+            dl.AddText(opTagBG.xy + spacing, textHoveredCol, opTag);
+            UI::BeginTooltip();
+            UI::Text("https://trackmania.io");
+            UI::EndTooltip();
+        } else {
+            dl.AddRectFilled(opTagBG, bgCol);
+            dl.AddText(opTagBG.xy + spacing, textDisabledCol, opTag);
+        }
+        
+
+        if (InvisibleButton(opTagBG)) {
+            OpenBrowserURL("https://trackmania.io");
+        }
 
 
         // draw taskbar providers
@@ -121,7 +138,42 @@ namespace Ticker {
 
     float getTickerOffset(float rate, float width) {
         float offset = float(Time::Now) * rate;
+        trace((offset % width));
         return width + (offset % width);
+    }
+
+    /**
+     * UI::InvisibleButton only works inside windows i guess... so we make our own version
+     */
+    bool InvisibleButton(vec4 rect) {
+        if (mouseDown && MouseIn(rect, mousePos)) {
+            mouseDown = false;
+            return true;
+        }
+        return false;
+    }
+
+    bool IsHovered(vec4 rect) {
+        return MouseIn(rect);
+    }
+
+    bool MouseIn(vec4 rect, vec2 pos = UI::GetMousePos()) {
+        return (pos.x >= rect.x && pos.x <= (rect.x + rect.z) && pos.y >= rect.y && pos.y <= (rect.y + rect.w));
+    }
+
+    bool mouseDown = false;
+    int mouseButton;
+    vec2 mousePos;
+
+    bool _mouseDown = false;
+    void OnMouseButton(bool down, int button, int x, int y) {
+
+        if (!_mouseDown) {
+            mouseDown = down;
+            mouseButton = button;
+            mousePos = vec2(x, y);
+        }
+        _mouseDown = down;
     }
 
 }
