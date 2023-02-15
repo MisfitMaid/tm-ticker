@@ -11,6 +11,9 @@ namespace Ticker {
     void step() {}
 
     void render() {
+        if (!showOnHiddenOverlay && !UI::IsOverlayShown()) {
+            return;
+        }
         UI::DrawList@ dl = UI::GetBackgroundDrawList();
 
         vec4 bgCol = UI::GetStyleColor(UI::Col::MenuBarBg);
@@ -20,7 +23,7 @@ namespace Ticker {
         float height = UI::GetTextLineHeight() + 2*spacing.y;
         vec4 tickerPos(0, Draw::GetHeight() - height, Draw::GetWidth(), height);
         if (showOnTop) {
-            tickerPos.y = height;
+            tickerPos.y = UI::IsOverlayShown() ? height : 0.f;
         }
 
         dl.AddRectFilled(tickerPos, bgCol);

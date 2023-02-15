@@ -14,4 +14,4 @@ void Main() {
 void OnSettingsChanged() { Ticker::init(); }
 void OnEnabled() { Ticker::init(); }
 
-void RenderInterface() { Ticker::render(); }
+void Render() { Ticker::render(); }
