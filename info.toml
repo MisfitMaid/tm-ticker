@@ -7,4 +7,6 @@ siteid = 332
 
 [script]
 dependencies = ["NadeoServices"]
+exports = [ "Export.Ticker.as" ]
+shared_exports = [ "ExportShared.Ticker.as" ]
 module = "ticker"
