@@ -6,6 +6,32 @@
 
 namespace Ticker {
     class TMioCampaignLeaderboardProvider : TickerItemProvider {
+
+        string[] leaderboards;
+
+        TMioCampaignLeaderboardProvider() {
+            auto req = Net::HttpGet("https://trackmania.io/api/campaigns/0");
+            while (!req.Finished()) yield();
+            Json::Value data = Json::Parse(req.String());
+            Json::Value camps = data["campaigns"];
+            for (uint i = 0; i < camps.Length; i++) {
+                if (bool(camps[i]['tracked'])) {
+                    string url;
+                    Json::Value c = camps[i];
+                    if (c["clubid"] == 0) {
+                        url = "https://trackmania.io/api/officialcampaign/" + uint(c["id"]);
+                    } else {
+                        url = "https://trackmania.io/api/campaign/" + uint(c["clubid"]) + "/" + uint(c["id"]);
+                    }
+                    auto req2 = Net::HttpGet(url);
+                    while (!req2.Finished()) yield();
+                    Json::Value cData = Json::Parse(req2.String());
+                    string leaderboardURL = "https://trackmania.io/api/leaderboard/activity/" + string(cData["leaderboarduid"]) + "/0";
+                    leaderboards.InsertLast(leaderboardURL);
+                }
+            }
+        }
+
         string getID() { return "Ticker/TMioCampaignLeaderboard"; }
 
         TickerItem@[]@ items;
@@ -19,38 +45,22 @@ namespace Ticker {
         }
 
         TickerItem@[]@ fetchNewRecords() {
-            auto req = Net::HttpGet("https://trackmania.io/api/campaigns/0");
-            while (!req.Finished()) yield();
-            Json::Value data = Json::Parse(req.String());
-            Json::Value camps = data["campaigns"];
+            TMIOImprovedTime@[] allRecords;
+            for (uint i = 0; i < leaderboards.Length; i++) {
+                auto req = Net::HttpGet(leaderboards[i]);
+                while (!req.Finished()) yield();
+                Json::Value lData = Json::Parse(req.String());
 
-            TickerItem@[] allRecords;
-            for (uint i = 0; i < camps.Length; i++) {
-                if (bool(camps[i]['tracked'])) {
-                    string url;
-                    Json::Value c = camps[i];
-                    if (c["clubid"] == 0) {
-                        url = "https://trackmania.io/api/officialcampaign/" + uint(c["id"]);
-                    } else {
-                        url = "https://trackmania.io/api/campaign/" + uint(c["clubid"]) + "/" + uint(c["id"]);
-                    }
-                    auto req2 = Net::HttpGet(url);
-                    while (!req2.Finished()) yield();
-                    Json::Value cData = Json::Parse(req2.String());
-
-                    string leaderboardURL = "https://trackmania.io/api/leaderboard/activity/" + string(cData["leaderboarduid"]) + "/0";
-
-                    auto req3 = Net::HttpGet(leaderboardURL);
-                    while (!req3.Finished()) yield();
-                    Json::Value lData = Json::Parse(req3.String());
-
-                    for (uint k = 0; k < lData.Length; k++) {
-                        allRecords.InsertLast(TMIOImprovedTime(lData[k]));
-                    }
+                for (uint k = 0; k < lData.Length; k++) {
+                    allRecords.InsertLast(TMIOImprovedTime(lData[k]));
                 }
             }
             allRecords.SortDesc();
-            return allRecords;
+            TickerItem@[] ret;
+            for (uint i = 0; i < allRecords.Length; i++) {
+                ret.InsertLast(allRecords[i]);
+            }
+            return ret;
         }
     }
 
@@ -100,10 +110,9 @@ namespace Ticker {
             OpenBrowserURL("https://trackmania.io/#/leaderboard/" + string(data["map"]["mapUid"]));
         }
 
-        int opCmp(TickerItem@ &in other) override {
-            auto o = cast<TMIOImprovedTime>(other);
-            if (parsedTime == o.parsedTime) return 0;
-            if (parsedTime > o.parsedTime) return 1;
+        int opCmp(TMIOImprovedTime &in other) {
+            if (parsedTime == other.parsedTime) return 0;
+            if (parsedTime > other.parsedTime) return 1;
             return -1;
         }
     }
