@@ -22,6 +22,7 @@ namespace Ticker {
         @cursedTimeDB = SQLite::Database(":memory:");
         if (enableComponentClock) {
             registerTaskbarProviderAddon(Clock());
+            registerTaskbarProviderAddon(FPS());
             registerTaskbarProviderAddon(COTD());
 
             registerTickerItemProviderAddon(TMioCampaignLeaderboardProvider());
@@ -54,6 +55,9 @@ namespace Ticker {
         if (!showOnHiddenOverlay && !UI::IsOverlayShown()) {
             return;
         }
+
+        if (GetApp().Editor !is null) return;
+
         auto cmap = GetApp().Network.ClientManiaAppPlayground;
         if (!showOnDriving && GetApp().RootMap !is null) {
             if (cmap.UI.UISequence == CGamePlaygroundUIConfig::EUISequence::Playing && !GetApp().Network.PlaygroundClientScriptAPI.IsInGameMenuDisplayed) {

@@ -74,4 +74,19 @@ namespace Ticker {
             }
         } 
     }
+
+    class FPS : TaskbarProvider {
+        string getID() { return "Ticker/FPS"; }
+        string getItemText() { 
+            if (GetApp().Viewport !is null) return Text::Format("%d", uint(GetApp().Viewport.AverageFps)) + " FPS";
+            return "";
+        }
+        void OnItemHovered() {
+            UI::BeginTooltip();
+            UI::Text("UTC: " + Time::FormatStringUTC(clockFormat));
+            UI::Text("CET: " + Time::FormatStringUTC(clockFormat, Time::Stamp + getFrenchOffset(Time::Stamp)));
+            UI::EndTooltip();
+        }
+        void OnItemClick() {}
+    }
 }
