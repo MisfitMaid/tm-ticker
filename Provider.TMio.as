@@ -80,10 +80,8 @@ namespace Ticker {
             auto req = Net::HttpGet("https://trackmania.io/api/leaderboard/" + cachedtotd);
             while (!req.Finished()) yield();
             Json::Value lData = Json::Parse(req.String())["tops"];
-            trace(req.String());
 
             for (int k = 0; k < Math::Min(lData.Length, numTotDRecords); k++) {
-                trace(k);
                 allRecords.InsertLast(TMIOTotDImprovedTime(lData[k], mapInfo, cachedtotd));
             }
             allRecords.SortDesc();
