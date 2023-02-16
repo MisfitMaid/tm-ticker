@@ -11,7 +11,7 @@ void Main() {
         yield();
     }
 }
-void OnSettingsChanged() { Ticker::init(); }
+void OnSettingsChanged() { startnew(Ticker::init); }
 void OnEnabled() { Ticker::init(); }
 
 void Render() { Ticker::render(); }
