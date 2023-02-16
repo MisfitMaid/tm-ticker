@@ -8,20 +8,49 @@ namespace Ticker {
     class TMioCampaignLeaderboardProvider : TickerItemProvider {
         string getID() { return "Ticker/TMioCampaignLeaderboard"; }
 
-        TickerItem@[] items;
+        TickerItem@[]@ items;
 
         TickerItem@[] getItems() {
             return items;
         }
 
         void OnUpdate() {
-            auto req = Net::HttpGet("https://trackmania.io/api/leaderboard/activity/aa4c4c42-7a04-4558-aca9-88db835fb30a/0");
+            @items = fetchNewRecords();
+        }
+
+        TickerItem@[]@ fetchNewRecords() {
+            auto req = Net::HttpGet("https://trackmania.io/api/campaigns/0");
             while (!req.Finished()) yield();
             Json::Value data = Json::Parse(req.String());
-            items.Resize(0);
-            for (uint i = 0; i < data.Length; i++) {
-                items.InsertLast(TMIOImprovedTime(data[i]));
+            Json::Value camps = data["campaigns"];
+
+            TickerItem@[] allRecords;
+            for (uint i = 0; i < camps.Length; i++) {
+                if (bool(camps[i]['tracked'])) {
+                    string url;
+                    Json::Value c = camps[i];
+                    if (c["clubid"] == 0) {
+                        url = "https://trackmania.io/api/officialcampaign/" + uint(c["id"]);
+                    } else {
+                        url = "https://trackmania.io/api/campaign/" + uint(c["clubid"]) + "/" + uint(c["id"]);
+                    }
+                    auto req2 = Net::HttpGet(url);
+                    while (!req2.Finished()) yield();
+                    Json::Value cData = Json::Parse(req2.String());
+
+                    string leaderboardURL = "https://trackmania.io/api/leaderboard/activity/" + string(cData["leaderboarduid"]) + "/0";
+
+                    auto req3 = Net::HttpGet(leaderboardURL);
+                    while (!req3.Finished()) yield();
+                    Json::Value lData = Json::Parse(req3.String());
+
+                    for (uint k = 0; k < lData.Length; k++) {
+                        allRecords.InsertLast(TMIOImprovedTime(lData[k]));
+                    }
+                }
             }
+            allRecords.SortDesc();
+            return allRecords;
         }
     }
 
@@ -69,6 +98,13 @@ namespace Ticker {
 
         void OnItemClick() override {
             OpenBrowserURL("https://trackmania.io/#/leaderboard/" + string(data["map"]["mapUid"]));
+        }
+
+        int opCmp(TickerItem@ &in other) override {
+            auto o = cast<TMIOImprovedTime>(other);
+            if (parsedTime == o.parsedTime) return 0;
+            if (parsedTime > o.parsedTime) return 1;
+            return -1;
         }
     }
 }

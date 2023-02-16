@@ -23,6 +23,7 @@ namespace Ticker {
             string getItemText();
             void OnItemHovered();
             void OnItemClick();
+            int opCmp(TickerItem@ &in other);
         }
 
         shared interface TickerItemProvider {
@@ -41,5 +42,6 @@ namespace Ticker {
             string getItemText() { return ""; }
             void OnItemHovered() {}
             void OnItemClick() {}
+            int opCmp(TickerItem@ &in other) {return 0;}
         }
 }
