@@ -66,6 +66,11 @@ namespace Ticker {
             }
         }
 
+        RenderTicker(dt);
+        if (debugMenu) RenderDebug();
+    }
+
+    void RenderTicker(uint dt) {
         UI::DrawList@ dl = UI::GetBackgroundDrawList();
 
         vec4 bgCol = UI::GetStyleColor(UI::Col::MenuBarBg);
@@ -170,6 +175,42 @@ namespace Ticker {
                 taskbars[i].OnItemClick();
             }
         }
+    }
+
+    void RenderDebug() {
+        if (UI::Begin("\\$3af" + Icons::Heartbeat + "\\$z Latest records", debugMenu, UI::WindowFlags::None)) {
+            TaskbarProvider@[]@ taskbars = getAllTaskbarProviders();
+            for (uint i = 0; i < taskbars.Length; i++) {
+                string content = taskbars[i].getItemText();
+                if (content.Length == 0) continue;
+                UI::Text(content);
+                if (UI::IsItemHovered()) {
+                    taskbars[i].OnItemHovered();
+                }
+                UI::SameLine();
+                if (UI::Button("Click###debugIconTb_"+i)) {
+                    taskbars[i].OnItemClick();
+                }
+            }
+            UI::Separator();
+            
+            for (uint i = 0; i < tickerItems.Length; i++) {
+                TickerItem@ ti = tickerItems[i];
+                string tiText = ti.getItemText();
+                if (tiText.Length == 0) continue;
+
+
+                if (UI::Button("Click###debugIconTi_"+i)) {
+                    tickerItems[i].OnItemClick();
+                }
+                UI::SameLine();
+                UI::Text(tiText);
+                if (UI::IsItemHovered()) {
+                    tickerItems[i].OnItemHovered();
+                }
+            }
+        }
+        UI::End();
     }
 
     /**
