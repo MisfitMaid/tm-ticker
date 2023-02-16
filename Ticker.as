@@ -20,27 +20,36 @@ namespace Ticker {
         initTime = Time::Now;
         animStartTime = Time::Now;
         @cursedTimeDB = SQLite::Database(":memory:");
-        if (enableComponentClock) {
-            registerTaskbarProviderAddon(Clock());
-            registerTaskbarProviderAddon(FPS());
-            registerTaskbarProviderAddon(Ping());
-            registerTaskbarProviderAddon(COTD());
 
-            registerTickerItemProviderAddon(TMioCampaignLeaderboardProvider());
-        }
+        if (enableComponentClock) registerTaskbarProviderAddon(Clock());
+        if (enableComponentFPS) registerTaskbarProviderAddon(FPS());
+        if (enableComponentPing) registerTaskbarProviderAddon(Ping());
+        if (enableComponentCotD) registerTaskbarProviderAddon(COTD());
+        if (enableComponentTotDRecords) registerTickerItemProviderAddon(TMioTotDLeaderboardProvider());
+        if (enableComponentCampaignRecords) registerTickerItemProviderAddon(TMioCampaignLeaderboardProvider());
     }
 
 
     void step() {
+        bool immediateUpdate = tickerItems.IsEmpty();
+        // if empty, we fill as quickly as possible to get something out. otherwise, we replace all items at once to avoid a big jump in the ticker
+
         TickerItemProvider@[]@ tips = getAllTickerItemProviders();
         if (lastRefresh == 0 || lastRefresh + (refreshTime * 1000) < Time::Now) {
             lastRefresh = Time::Now;
             for (uint i = 0; i < tips.Length; i++) {
                 tips[i].OnUpdate();
+                if (immediateUpdate) {
+                    TickerItem@[] ti = tips[i].getItems();
+                    for (uint ii = 0; ii < ti.Length; ii++) {
+                        tickerItems.InsertLast(ti[ii]);
+                    }
+                }
             }
         }
+        if (immediateUpdate) return;
 
-        if (!tickerItems.IsEmpty()) tickerItems.Resize(0);
+        tickerItems.Resize(0);
         for (uint i = 0; i < tips.Length; i++) {
             TickerItem@[] ti = tips[i].getItems();
             for (uint ii = 0; ii < ti.Length; ii++) {

@@ -26,4 +26,25 @@ namespace Ticker {
 
     [Setting category="Components" name="Clock format" description="Time format in strftrime format"]
     string clockFormat = "%X";
+    
+    [Setting category="Components" name="FPS" description="Shows your current frames per second"]
+    bool enableComponentFPS = true;
+    
+    [Setting category="Components" name="Ping" description="Shows the current ping when connected to a multiplayer server"]
+    bool enableComponentPing = true;
+
+    [Setting category="Components" name="CotD Countdown" description="Shows a countdown to the next cup of the day/night/morning"]
+    bool enableComponentCotD = true;
+
+    [Setting category="Components" name="Campaign Records" description="Show the latest campaign and competitive records"]
+    bool enableComponentCampaignRecords = true;
+
+    [Setting category="Components" name="Campaign Records: Count" description="Show this many records"]
+    uint numCampaignRecords = 10;
+
+    [Setting category="Components" name="TotD Records" description="Show the latest Track of the Day records"]
+    bool enableComponentTotDRecords = true;
+
+    [Setting category="Components" name="TotD Records: Count" description="Show this many records"]
+    uint numTotDRecords = 5;
 }

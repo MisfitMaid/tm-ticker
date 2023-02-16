@@ -57,10 +57,66 @@ namespace Ticker {
             }
             allRecords.SortDesc();
             TickerItem@[] ret;
+            for (int i = 0; i < Math::Min(numCampaignRecords, allRecords.Length); i++) {
+                ret.InsertLast(allRecords[i]);
+            }
+            return ret;
+        }
+    }
+
+    class TMioTotDLeaderboardProvider : TMioCampaignLeaderboardProvider {
+        string cachedtotd = "";
+        Json::Value@ mapInfo;
+
+        TMioTotDLeaderboardProvider() {
+            getTotDLeaderboard();
+        }
+
+        string getID() override { return "Ticker/TMioTotDLeaderboard"; }
+
+        TickerItem@[]@ fetchNewRecords() override {
+            getTotDLeaderboard();
+            TMIOTotDImprovedTime@[] allRecords;
+            auto req = Net::HttpGet("https://trackmania.io/api/leaderboard/" + cachedtotd);
+            while (!req.Finished()) yield();
+            Json::Value lData = Json::Parse(req.String())["tops"];
+            trace(req.String());
+
+            for (int k = 0; k < Math::Min(lData.Length, numTotDRecords); k++) {
+                trace(k);
+                allRecords.InsertLast(TMIOTotDImprovedTime(lData[k], mapInfo, cachedtotd));
+            }
+            allRecords.SortDesc();
+            TickerItem@[] ret;
             for (uint i = 0; i < allRecords.Length; i++) {
                 ret.InsertLast(allRecords[i]);
             }
             return ret;
+        }
+
+        string getTotDLeaderboard() {
+            if (cachedtotd.Length > 0 && !isCotdInProgress()) {
+                return cachedtotd;
+            }
+            auto req = Net::HttpGet("https://trackmania.io/api/totd/0");
+            while (!req.Finished()) yield();
+            Json::Value data = Json::Parse(req.String());
+            Json::Value day = data["days"][data["days"].Length-1];
+            @mapInfo = day;
+            cachedtotd = string(day["leaderboarduid"]) + "/" + string(day["map"]["mapUid"]);
+            return cachedtotd;
+        }
+
+        bool isCotdInProgress() {
+            uint64 frenchTime = Time::Stamp + getFrenchOffset(Time::Stamp);
+
+            uint64 beginningOfDay = frenchTime - (frenchTime % 86400);
+
+            uint cotdStart = 3600 * 18;
+            uint cotdEnd = cotdStart + 900;
+
+            uint timeElapsed = frenchTime - beginningOfDay;
+            return (timeElapsed >= cotdStart && timeElapsed <= cotdEnd);
         }
     }
 
@@ -111,6 +167,38 @@ namespace Ticker {
         }
 
         int opCmp(TMIOImprovedTime &in other) {
+            if (parsedTime == other.parsedTime) return 0;
+            if (parsedTime > other.parsedTime) return 1;
+            return -1;
+        }
+    }
+
+    class TMIOTotDImprovedTime : TMIOImprovedTime {
+        
+        Json::Value@ map;
+        string leaderboardUid;
+        
+        TMIOTotDImprovedTime() {}
+        TMIOTotDImprovedTime(Json::Value@ inDat, Json::Value@ inMap, const string &in inLeaderboardUid) {
+            @data = inDat;
+            @map = inMap;
+            leaderboardUid = inLeaderboardUid;
+            parsedTime = ParseTime(inDat["timestamp"]);
+        }
+
+        string getItemText() override {
+            string mapname = StripFormatCodes(map["map"]["name"]) + " (TotD)";
+            string player = StripFormatCodes(data["player"]["name"]);
+            string time = Time::Format(data["time"]);
+            string at = relTimeStr();
+            return "\\$666" + at + " ago:\\$z " + mapname + " \\$666in\\$z " + time + "\\$666 by \\$z" + player;
+        }
+
+        void OnItemClick() override {
+            OpenBrowserURL("/totd/leaderboard/" + leaderboardUid);
+        }
+
+        int opCmp(TMIOTotDImprovedTime &in other) {
             if (parsedTime == other.parsedTime) return 0;
             if (parsedTime > other.parsedTime) return 1;
             return -1;
