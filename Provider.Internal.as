@@ -31,7 +31,7 @@ namespace Ticker {
             uint64 frenchTime = inTime + getFrenchOffset(inTime);
 
             auto ti = Time::ParseUTC(frenchTime);
-            uint64 beginningOfDay = inTime - (inTime % 86400);
+            uint64 beginningOfDay = frenchTime - (frenchTime % 86400);
 
             uint cotnStart = 3600 * 2;
             uint cotnEnd = cotnStart + 900;
@@ -41,7 +41,7 @@ namespace Ticker {
             uint cotdEnd = cotdStart + 900;
 
             uint timeUntil = 0;
-            uint timeElapsed = inTime - beginningOfDay;
+            uint timeElapsed = frenchTime - beginningOfDay;
             string nextEvent;
             if (timeElapsed <= cotnStart) {
                 timeUntil = cotnStart - timeElapsed;
