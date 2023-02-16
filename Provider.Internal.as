@@ -81,12 +81,21 @@ namespace Ticker {
             if (GetApp().Viewport !is null) return Text::Format("%d", uint(GetApp().Viewport.AverageFps)) + " FPS";
             return "";
         }
-        void OnItemHovered() {
-            UI::BeginTooltip();
-            UI::Text("UTC: " + Time::FormatStringUTC(clockFormat));
-            UI::Text("CET: " + Time::FormatStringUTC(clockFormat, Time::Stamp + getFrenchOffset(Time::Stamp)));
-            UI::EndTooltip();
+        void OnItemHovered() {}
+        void OnItemClick() {}
+    }
+
+    class Ping : TaskbarProvider {
+        string getID() { return "Ticker/Ping"; }
+        string getItemText() { 
+            auto Network = cast<CTrackManiaNetwork>(GetApp().Network);
+            auto ServerInfo = cast<CGameCtnNetServerInfo>(Network.ServerInfo);
+            if (ServerInfo.JoinLink != "") {
+                return Text::Format("%d", Network.LatestGamePing) + "ms";
+            }
+            return "";
         }
+        void OnItemHovered() {}
         void OnItemClick() {}
     }
 }

@@ -23,6 +23,7 @@ namespace Ticker {
         if (enableComponentClock) {
             registerTaskbarProviderAddon(Clock());
             registerTaskbarProviderAddon(FPS());
+            registerTaskbarProviderAddon(Ping());
             registerTaskbarProviderAddon(COTD());
 
             registerTickerItemProviderAddon(TMioCampaignLeaderboardProvider());
@@ -155,11 +156,12 @@ namespace Ticker {
         TaskbarProvider@[]@ taskbars = getAllTaskbarProviders();
         for (uint i = 0; i < taskbars.Length; i++) {
             string content = taskbars[i].getItemText();
-            vec2 cWid = Draw::MeasureString(content) + spacing*2;
+            if (content.Length == 0) continue;
+            vec2 cWid = Draw::MeasureString(content) + spacing*2 + vec2(10,0);
             taskbarOffset = vec2(taskbarOffset.x - cWid.x, taskbarOffset.y);
-            vec4 taskbarBG(taskbarOffset - vec2(0, cWid.y), cWid);
+            vec4 taskbarBG = vec4(taskbarOffset - vec2(0, cWid.y), cWid) + vec4(5, 0, 0, 0);
             
-            dl.AddRectFilled(taskbarBG + vec4(-10, 0, 10, 0), bgCol);
+            dl.AddRectFilled(taskbarBG, bgCol);
             dl.AddText(taskbarBG.xy + spacing, textDisabledCol, content);
             if (IsHovered(taskbarBG)) {
                 taskbars[i].OnItemHovered();
