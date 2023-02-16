@@ -193,7 +193,7 @@ namespace Ticker {
         }
 
         void OnItemClick() override {
-            OpenBrowserURL("/totd/leaderboard/" + leaderboardUid);
+            OpenBrowserURL("https://trackmania.io/#/totd/leaderboard/" + leaderboardUid);
         }
 
         int opCmp(TMIOTotDImprovedTime &in other) {

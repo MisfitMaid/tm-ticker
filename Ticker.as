@@ -192,13 +192,14 @@ namespace Ticker {
             for (uint i = 0; i < taskbars.Length; i++) {
                 string content = taskbars[i].getItemText();
                 if (content.Length == 0) continue;
+
+                if (UI::Button("Click###debugIconTb_"+i)) {
+                    taskbars[i].OnItemClick();
+                }
+                UI::SameLine();
                 UI::Text(content);
                 if (UI::IsItemHovered()) {
                     taskbars[i].OnItemHovered();
-                }
-                UI::SameLine();
-                if (UI::Button("Click###debugIconTb_"+i)) {
-                    taskbars[i].OnItemClick();
                 }
             }
             UI::Separator();
@@ -207,7 +208,6 @@ namespace Ticker {
                 TickerItem@ ti = tickerItems[i];
                 string tiText = ti.getItemText();
                 if (tiText.Length == 0) continue;
-
 
                 if (UI::Button("Click###debugIconTi_"+i)) {
                     tickerItems[i].OnItemClick();
