@@ -36,23 +36,13 @@ namespace Ticker {
 
 
     void step() {
-        bool immediateUpdate = tickerItems.IsEmpty();
-        // if empty, we fill as quickly as possible to get something out. otherwise, we replace all items at once to avoid a big jump in the ticker
-
         TickerItemProvider@[]@ tips = getAllTickerItemProviders();
         if (lastRefresh == 0 || lastRefresh + (refreshTime * 1000) < Time::Now) {
             lastRefresh = Time::Now;
             for (uint i = 0; i < tips.Length; i++) {
                 tips[i].OnUpdate();
-                if (immediateUpdate) {
-                    TickerItem@[] ti = tips[i].getItems();
-                    for (uint ii = 0; ii < ti.Length; ii++) {
-                        tickerItems.InsertLast(ti[ii]);
-                    }
-                }
             }
         }
-        if (immediateUpdate) return;
 
         tickerItems.Resize(0);
         for (uint i = 0; i < tips.Length; i++) {
@@ -63,6 +53,10 @@ namespace Ticker {
         }
 
         tickerItems.Sort(LessSort(LessSortFunc));
+
+        while (tickerCount > 0 && tickerItems.Length > tickerCount) {
+            tickerItems.RemoveAt(tickerCount);
+        }
     }
 
     void render() {

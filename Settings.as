@@ -27,6 +27,9 @@ namespace Ticker {
     [Setting category="Display" name="Scroll rate" description="How fast to scroll the ticker display (px/ms)"]
     float tickerRate = 0.05f;
 
+    [Setting category="Display" name="Number of items" description="Number of ticker items to display. Set to 0 to show everything available"]
+    uint tickerCount = 15;
+
     [Setting category="Components" name="Clock" description="Shows the current time"]
     bool enableComponentClock = true;
 
