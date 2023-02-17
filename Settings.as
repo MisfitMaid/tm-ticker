@@ -45,12 +45,6 @@ namespace Ticker {
     [Setting category="Components" name="Campaign Records" description="Show the latest campaign and competitive records"]
     bool enableComponentCampaignRecords = true;
 
-    [Setting category="Components" name="Campaign Records: Count" description="Show this many records"]
-    uint numCampaignRecords = 10;
-
     [Setting category="Components" name="TotD Records" description="Show the latest Track of the Day records"]
     bool enableComponentTotDRecords = true;
-
-    [Setting category="Components" name="TotD Records: Count" description="Show this many records"]
-    uint numTotDRecords = 5;
 }

@@ -21,6 +21,7 @@ namespace Ticker {
 
         shared interface TickerItem {
             string getItemText();
+            uint64 getSortTime() const;
             void OnItemHovered();
             void OnItemClick();
         }
@@ -39,6 +40,7 @@ namespace Ticker {
 
         shared class BaseTickerItem : TickerItem {
             string getItemText() { return ""; }
+            uint64 getSortTime() const { return 0; }
             void OnItemHovered() {}
             void OnItemClick() {}
         }

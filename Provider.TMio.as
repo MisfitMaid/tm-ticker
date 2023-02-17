@@ -45,7 +45,7 @@ namespace Ticker {
         }
 
         TickerItem@[]@ fetchNewRecords() {
-            TMIOImprovedTime@[] allRecords;
+            TickerItem@[] allRecords;
             for (uint i = 0; i < leaderboards.Length; i++) {
                 auto req = Net::HttpGet(leaderboards[i]);
                 while (!req.Finished()) yield();
@@ -55,12 +55,7 @@ namespace Ticker {
                     allRecords.InsertLast(TMIOImprovedTime(lData[k]));
                 }
             }
-            allRecords.SortDesc();
-            TickerItem@[] ret;
-            for (int i = 0; i < Math::Min(numCampaignRecords, allRecords.Length); i++) {
-                ret.InsertLast(allRecords[i]);
-            }
-            return ret;
+            return allRecords;
         }
     }
 
@@ -76,20 +71,11 @@ namespace Ticker {
 
         TickerItem@[]@ fetchNewRecords() override {
             getTotDLeaderboard();
-            TMIOTotDImprovedTime@[] allRecords;
+            TickerItem@[] allRecords;
             auto req = Net::HttpGet("https://trackmania.io/api/leaderboard/" + cachedtotd);
             while (!req.Finished()) yield();
             Json::Value lData = Json::Parse(req.String())["tops"];
-
-            for (int k = 0; k < Math::Min(lData.Length, numTotDRecords); k++) {
-                allRecords.InsertLast(TMIOTotDImprovedTime(lData[k], mapInfo, cachedtotd));
-            }
-            allRecords.SortDesc();
-            TickerItem@[] ret;
-            for (uint i = 0; i < allRecords.Length; i++) {
-                ret.InsertLast(allRecords[i]);
-            }
-            return ret;
+            return allRecords;
         }
 
         string getTotDLeaderboard() {
@@ -122,7 +108,7 @@ namespace Ticker {
         
         Json::Value@ data;
 
-        int64 parsedTime;
+        uint64 parsedTime;
         
         TMIOImprovedTime() {}
         TMIOImprovedTime(Json::Value@ inDat) {
@@ -137,6 +123,10 @@ namespace Ticker {
             string diff = Time::Format(Math::Abs(int(data["timediff"])), true, false);
             string at = relTimeStr();
             return "\\$666" + at + " ago:\\$z " + map + " \\$666in\\$z " + time + " \\$66c(-" + diff + ")\\$666 by \\$z" + player;
+        }
+
+        uint64 getSortTime() const override {
+            return parsedTime;
         }
 
         string relTimeStr() {
@@ -163,12 +153,6 @@ namespace Ticker {
         void OnItemClick() override {
             OpenBrowserURL("https://trackmania.io/#/leaderboard/" + string(data["map"]["mapUid"]));
         }
-
-        int opCmp(TMIOImprovedTime &in other) {
-            if (parsedTime == other.parsedTime) return 0;
-            if (parsedTime > other.parsedTime) return 1;
-            return -1;
-        }
     }
 
     class TMIOTotDImprovedTime : TMIOImprovedTime {
@@ -194,12 +178,6 @@ namespace Ticker {
 
         void OnItemClick() override {
             OpenBrowserURL("https://trackmania.io/#/totd/leaderboard/" + leaderboardUid);
-        }
-
-        int opCmp(TMIOTotDImprovedTime &in other) {
-            if (parsedTime == other.parsedTime) return 0;
-            if (parsedTime > other.parsedTime) return 1;
-            return -1;
         }
     }
 }

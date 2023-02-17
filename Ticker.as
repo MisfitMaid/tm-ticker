@@ -16,6 +16,11 @@ namespace Ticker {
 
     SQLite::Database@ cursedTimeDB;
 
+    funcdef bool LessSort(const TickerItem@ &in a, const TickerItem@ &in b);
+    bool LessSortFunc(const TickerItem@ &in a, const TickerItem@ &in b) {
+            return a.getSortTime() > b.getSortTime();
+        }
+
     void init() {
         initTime = Time::Now;
         animStartTime = Time::Now;
@@ -56,6 +61,8 @@ namespace Ticker {
                 tickerItems.InsertLast(ti[ii]);
             }
         }
+
+        tickerItems.Sort(LessSort(LessSortFunc));
     }
 
     void render() {
