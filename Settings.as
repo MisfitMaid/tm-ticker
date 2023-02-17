@@ -18,8 +18,14 @@ namespace Ticker {
     [Setting category="Display" name="Debug panel" description="Summons an imgui window showing all ticker items at once"]
     bool debugMenu = false;
 
+    [Setting category="Display" name="Pause on hover" description="Stop the ticker from moving when hovering over it"]
+    bool pauseOnHover = false;
+
     [Setting category="Display" name="Refresh time (sec)" description="How often to poll for updated items"]
     uint refreshTime = 300;
+
+    [Setting category="Display" name="Scroll rate" description="How fast to scroll the ticker display (px/ms)"]
+    float tickerRate = 0.05f;
 
     [Setting category="Components" name="Clock" description="Shows the current time"]
     bool enableComponentClock = true;

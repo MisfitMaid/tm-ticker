@@ -97,13 +97,13 @@ namespace Ticker {
 
         dl.AddRectFilled(tickerPos, bgCol);
 
-        if (!IsHovered(tickerPos)) {
+        if (!IsHovered(tickerPos) || !pauseOnHover) {
             tickerOffsetTime += dt;
         }
 
         // draw ticker here
         vec4 tickerTextPos = tickerPos * vec4(1, 1, 1.5, 1);
-        float offset = tickerTextPos.z + ((0.05f * tickerOffsetTime) % tickerTextPos.z);
+        float offset = tickerTextPos.z + ((tickerRate * tickerOffsetTime) % tickerTextPos.z);
 
         if (tickerItems.Length > 0) {
             uint item = 0;
@@ -117,13 +117,8 @@ namespace Ticker {
                 dl.AddText(finalPos, textCol, tiText);
 
                 vec4 rect(finalPos, myWidth);
-
                 if (IsHovered(rect)) {
-                    dl.AddRectFilled(rect, bgHoveredCol);
-                    dl.AddText(rect.xy, textHoveredCol, tiText);
                     ti.OnItemHovered();
-                } else {
-                    dl.AddText(rect.xy, textCol, tiText);
                 }
                 
 

@@ -16,7 +16,9 @@ namespace Ticker {
             UI::Text("CET: " + Time::FormatStringUTC(clockFormat, Time::Stamp + getFrenchOffset(Time::Stamp)));
             UI::EndTooltip();
         }
-        void OnItemClick() {}
+        void OnItemClick() {
+            OpenBrowserURL("https://time.is/");
+        }
     }
 
     class COTD : TaskbarProvider {
@@ -32,7 +34,9 @@ namespace Ticker {
             UI::Text(getCOTDString(Time::Stamp, secondsUntil(11, 0, frenchTime % 86400)));
             UI::EndTooltip();
         }
-        void OnItemClick() {}
+        void OnItemClick() {
+            OpenBrowserURL("https://time.is/Paris");
+        }
 
         string getCOTDString(uint64 inTime, uint forceGoal = 0) {
             uint64 frenchTime = inTime + getFrenchOffset(inTime);
