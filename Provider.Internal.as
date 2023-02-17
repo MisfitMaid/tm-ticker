@@ -24,55 +24,59 @@ namespace Ticker {
         string getItemText() {
             return getCOTDString(Time::Stamp);
         }
-        void OnItemHovered() {}
+        void OnItemHovered() {
+            uint64 frenchTime = Time::Stamp + getFrenchOffset(Time::Stamp);
+            UI::BeginTooltip();
+            UI::Text(getCOTDString(Time::Stamp, secondsUntil(19, 0, frenchTime % 86400)));
+            UI::Text(getCOTDString(Time::Stamp, secondsUntil(3, 0, frenchTime % 86400)));
+            UI::Text(getCOTDString(Time::Stamp, secondsUntil(11, 0, frenchTime % 86400)));
+            UI::EndTooltip();
+        }
         void OnItemClick() {}
 
-        string getCOTDString(uint64 inTime) {
+        string getCOTDString(uint64 inTime, uint forceGoal = 0) {
             uint64 frenchTime = inTime + getFrenchOffset(inTime);
 
-            auto ti = Time::ParseUTC(frenchTime);
-            uint64 beginningOfDay = frenchTime - (frenchTime % 86400);
+            uint cotnStart = secondsUntil( 3,  0, frenchTime % 86400);
+            uint cotnEnd   = secondsUntil( 3, 15, frenchTime % 86400);
+            uint cotmStart = secondsUntil(11,  0, frenchTime % 86400);
+            uint cotmEnd   = secondsUntil(11, 15, frenchTime % 86400);
+            uint cotdStart = secondsUntil(19,  0, frenchTime % 86400);
+            uint cotdEnd   = secondsUntil(19, 15, frenchTime % 86400);
 
-            uint cotnStart = 3600 * 2;
-            uint cotnEnd = cotnStart + 900;
-            uint cotmStart = 3600 * 10;
-            uint cotmEnd = cotmStart + 900;
-            uint cotdStart = 3600 * 18;
-            uint cotdEnd = cotdStart + 900;
-
-            uint timeUntil = 0;
-            uint timeElapsed = frenchTime - beginningOfDay;
-            string nextEvent;
-            if (timeElapsed <= cotnStart) {
-                timeUntil = cotnStart - timeElapsed;
-                nextEvent = "CotN";
-            } else if (timeElapsed <= cotnEnd) {
-                return "\\$3afCotN qualification in progress";
-            } else if (timeElapsed <= cotmStart) {
-                timeUntil = cotmStart - timeElapsed;
-                nextEvent = "CotM";
-            } else if (timeElapsed <= cotmEnd) {
-                return "\\$3afCotM qualification in progress";
-            } else if (timeElapsed <= cotdStart) {
-                timeUntil = cotdStart - timeElapsed;
-                nextEvent = "CotD";
-            } else if (timeElapsed <= cotdEnd) {
-                return "\\$3afCotD qualification in progress";
+            // i hate everything about this bit of code
+            uint nextEvent;
+            if (forceGoal == 0) {
+                nextEvent = Math::Min(cotnStart, Math::Min(cotnEnd, Math::Min(cotmStart, Math::Min(cotmEnd, Math::Min(cotdStart, cotdEnd)))));
             } else {
-                timeUntil = cotnStart + (86400 - timeElapsed);
-                nextEvent = "CotN";
+                nextEvent = forceGoal;
             }
             
-            uint min = timeUntil / 60;
-            uint h = min / 60;
-            uint m = min % 60;
 
-            if (h == 0) {
-                return (m < 15 ? "\\$3af" : "") + m + "m until "+nextEvent;
+            string nextEventStr = Time::Format(nextEvent*1000, false, true, false, true);
+            string cotdCol = "";
+            if (nextEvent < 900) cotdCol = "\\$3af";
+
+            if (nextEvent == cotnStart) {
+                return cotdCol+"CotN in " + nextEventStr;
+            } else if (nextEvent == cotnEnd) {
+                return cotdCol+"CotN qualification in progress";
+            } else if (nextEvent == cotmStart) {
+                return cotdCol+"CotM in " + nextEventStr;
+            } else if (nextEvent == cotmEnd) {
+                return cotdCol+"CotM qualification in progress";
+            } else if (nextEvent == cotdStart) {
+                return cotdCol+"CotD in " + nextEventStr;
             } else {
-                return h+"h "+m+"m until "+nextEvent;
+                return cotdCol+"CotD qualification in progress";
             }
-        } 
+        }
+
+        uint secondsUntil(uint h, uint m, uint64 cur) {
+            uint goal = (h * 3600) + (m * 60);
+            if (goal <= cur) goal += 86400;
+            return goal - cur;
+        }
     }
 
     class FPS : TaskbarProvider {
