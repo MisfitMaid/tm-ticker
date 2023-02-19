@@ -29,9 +29,6 @@ namespace Ticker {
         }
 
         string getTotDLeaderboard() {
-            if (cachedtotd.Length > 0 && !isCotdInProgress()) {
-                return cachedtotd;
-            }
             auto req = Net::HttpGet("https://trackmania.io/api/totd/0");
             while (!req.Finished()) yield();
             Json::Value data = Json::Parse(req.String());
@@ -39,18 +36,6 @@ namespace Ticker {
             @mapInfo = day;
             cachedtotd = string(day["leaderboarduid"]) + "/" + string(day["map"]["mapUid"]);
             return cachedtotd;
-        }
-
-        bool isCotdInProgress() {
-            uint64 frenchTime = Time::Stamp + getFrenchOffset(Time::Stamp);
-
-            uint64 beginningOfDay = frenchTime - (frenchTime % 86400);
-
-            uint cotdStart = 3600 * 18;
-            uint cotdEnd = cotdStart + 900;
-
-            uint timeElapsed = frenchTime - beginningOfDay;
-            return (timeElapsed >= cotdStart && timeElapsed <= cotdEnd);
         }
     }
 
