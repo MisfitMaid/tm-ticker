@@ -15,9 +15,6 @@ namespace Ticker {
     [Setting category="Display" name="Show when driving" description="Toggle on to show even while driving"]
     bool showOnDriving = false;
 
-    [Setting category="Display" name="Debug panel" description="Summons an imgui window showing all ticker items at once"]
-    bool debugMenu = false;
-
     [Setting category="Display" name="Pause on hover" description="Stop the ticker from moving when hovering over it"]
     bool pauseOnHover = false;
 
@@ -32,26 +29,31 @@ namespace Ticker {
 
 
 
-    [Setting category="Components" name="Clock" description="Shows the current time"]
+    [Setting category="Components" name="Clock" description="Shows the current time. Requires plugin restart."]
     bool enableComponentClock = true;
 
-    [Setting category="Components" name="Clock format" description="Time format in strftrime format"]
+    [Setting category="Components" name="Clock format" description="Time format in strftrime format. Requires plugin restart."]
     string clockFormat = "%X";
     
-    [Setting category="Components" name="FPS" description="Shows your current frames per second"]
+    [Setting category="Components" name="FPS" description="Shows your current frames per second. Requires plugin restart."]
     bool enableComponentFPS = true;
     
-    [Setting category="Components" name="Ping" description="Shows the current ping when connected to a multiplayer server"]
+    [Setting category="Components" name="Ping" description="Shows the current ping when connected to a multiplayer server. Requires plugin restart."]
     bool enableComponentPing = true;
 
-    [Setting category="Components" name="CotD Countdown" description="Shows a countdown to the next cup of the day/night/morning"]
+    [Setting category="Components" name="CotD Countdown" description="Shows a countdown to the next cup of the day/night/morning. Requires plugin restart."]
     bool enableComponentCotD = true;
 
-    [Setting category="Components" name="Campaign Records" description="Show the latest campaign and competitive records"]
+    [Setting category="Components" name="Campaign Records" description="Show the latest campaign and competitive records. Requires plugin restart."]
     bool enableComponentCampaignRecords = true;
 
-    [Setting category="Components" name="TotD Records" description="Show the latest Track of the Day records"]
+    [Setting category="Components" name="TotD Records" description="Show the latest Track of the Day records. Requires plugin restart."]
     bool enableComponentTotDRecords = true;
+
+
+
+    [Setting category="Advanced Customization"]
+    bool debugMenu = false;
 
     [Setting category="Advanced Customization"]
     float tickerItemPadding = 96.f;

@@ -190,7 +190,7 @@ namespace Ticker {
     }
 
     void RenderDebug() {
-        if (UI::Begin("\\$3af" + Icons::Heartbeat + "\\$z Latest records", debugMenu, UI::WindowFlags::None)) {
+        if (UI::Begin("\\$3af" + Icons::Heartbeat + "\\$z Ticker Debug", debugMenu, UI::WindowFlags::None)) {
             TaskbarProvider@[]@ taskbars = getAllTaskbarProviders();
             for (uint i = 0; i < taskbars.Length; i++) {
                 string content = taskbars[i].getItemText();
