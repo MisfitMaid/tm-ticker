@@ -9,27 +9,47 @@ namespace Ticker {
 
         string[] leaderboards;
 
-        TMioCampaignLeaderboardProvider() {
+        bool fetchingCampaign = false;
+        void getCampaignList() {
+            if (fetchingCampaign) return; // only one at a time pls
+            fetchingCampaign = true;
             auto req = Net::HttpGet("https://trackmania.io/api/campaigns/0");
             while (!req.Finished()) yield();
             Json::Value data = Json::Parse(req.String());
             Json::Value camps = data["campaigns"];
             for (uint i = 0; i < camps.Length; i++) {
                 if (bool(camps[i]['tracked'])) {
-                    string url;
                     Json::Value c = camps[i];
-                    if (c["clubid"] == 0) {
-                        url = "https://trackmania.io/api/officialcampaign/" + uint(c["id"]);
-                    } else {
-                        url = "https://trackmania.io/api/campaign/" + uint(c["clubid"]) + "/" + uint(c["id"]);
-                    }
-                    auto req2 = Net::HttpGet(url);
-                    while (!req2.Finished()) yield();
-                    Json::Value cData = Json::Parse(req2.String());
-                    string leaderboardURL = "https://trackmania.io/api/leaderboard/activity/" + string(cData["leaderboarduid"]) + "/0";
-                    leaderboards.InsertLast(leaderboardURL);
+                    string leaderboard = getCampaignLeaderboard(c["id"], c["clubid"]);
+                    leaderboards.InsertLast("https://trackmania.io/api/leaderboard/activity/" + leaderboard + "/0");
                 }
             }
+            fetchingCampaign = false;
+        }
+
+        string getCampaignLeaderboard(uint id, uint clubid = 0) {
+            if (IO::FileExists(IO::FromStorageFolder("campaigns/"+id))) {
+                IO::File store(IO::FromStorageFolder("campaigns/"+id), IO::FileMode::Read);
+                string lid = store.ReadToEnd();
+                store.Close();
+                return lid;
+            }
+            string url;
+            if (clubid == 0) {
+                url = "https://trackmania.io/api/officialcampaign/" + id;
+            } else {
+                url = "https://trackmania.io/api/campaign/" + clubid + "/" + id;
+            }
+            auto req2 = Net::HttpGet(url);
+            while (!req2.Finished()) yield();
+            Json::Value cData = Json::Parse(req2.String());
+            string lid = string(cData["leaderboarduid"]);
+
+            if (!IO::FolderExists(IO::FromStorageFolder("campaigns"))) IO::CreateFolder(IO::FromStorageFolder("campaigns"));
+            IO::File store(IO::FromStorageFolder("campaigns/"+id), IO::FileMode::Write);
+            store.Write(lid);
+            store.Close();
+            return lid;
         }
 
         string getID() { return "Ticker/TMioCampaignLeaderboard"; }
@@ -41,6 +61,7 @@ namespace Ticker {
         }
 
         void OnUpdate() {
+            if (leaderboards.Length == 0) getCampaignList();
             @items = fetchNewRecords();
         }
 
@@ -64,7 +85,6 @@ namespace Ticker {
         Json::Value@ mapInfo;
 
         TMioTotDLeaderboardProvider() {
-            getTotDLeaderboard();
         }
 
         string getID() override { return "Ticker/TMioTotDLeaderboard"; }
@@ -75,6 +95,10 @@ namespace Ticker {
             auto req = Net::HttpGet("https://trackmania.io/api/leaderboard/" + cachedtotd);
             while (!req.Finished()) yield();
             Json::Value lData = Json::Parse(req.String())["tops"];
+
+            for (uint k = 0; k < uint(Math::Min(lData.Length, 5)); k++) {
+                allRecords.InsertLast(TMIOTotDImprovedTime(lData[k], mapInfo, cachedtotd));
+            }
             return allRecords;
         }
 

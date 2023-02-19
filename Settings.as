@@ -30,6 +30,8 @@ namespace Ticker {
     [Setting category="Display" name="Number of items" description="Number of ticker items to display. Set to 0 to show everything available"]
     uint tickerCount = 15;
 
+
+
     [Setting category="Components" name="Clock" description="Shows the current time"]
     bool enableComponentClock = true;
 
@@ -50,4 +52,7 @@ namespace Ticker {
 
     [Setting category="Components" name="TotD Records" description="Show the latest Track of the Day records"]
     bool enableComponentTotDRecords = true;
+
+    [Setting category="Advanced Customization"]
+    float tickerItemPadding = 96.f;
 }

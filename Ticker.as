@@ -13,13 +13,15 @@ namespace Ticker {
     uint64 lastFrameTime = 0;
     uint64 lastRefresh = 0;
     TickerItem@[] tickerItems;
+    bool isRefreshing = false;
 
     SQLite::Database@ cursedTimeDB;
 
     funcdef bool LessSort(const TickerItem@ &in a, const TickerItem@ &in b);
     bool LessSortFunc(const TickerItem@ &in a, const TickerItem@ &in b) {
-            return a.getSortTime() > b.getSortTime();
-        }
+        if (a is null || b is null) return false;
+        return a.getSortTime() > b.getSortTime();
+    }
 
     void init() {
         initTime = Time::Now;
@@ -38,10 +40,12 @@ namespace Ticker {
     void step() {
         TickerItemProvider@[]@ tips = getAllTickerItemProviders();
         if (lastRefresh == 0 || lastRefresh + (refreshTime * 1000) < Time::Now) {
+            isRefreshing = true;
             lastRefresh = Time::Now;
             for (uint i = 0; i < tips.Length; i++) {
                 tips[i].OnUpdate();
             }
+            isRefreshing = false;
         }
 
         tickerItems.Resize(0);
@@ -52,7 +56,7 @@ namespace Ticker {
             }
         }
 
-        tickerItems.Sort(LessSort(LessSortFunc));
+        if (tickerItems.Length > 1) tickerItems.Sort(LessSort(LessSortFunc));
 
         while (tickerCount > 0 && tickerItems.Length > tickerCount) {
             tickerItems.RemoveAt(tickerCount);
@@ -71,6 +75,7 @@ namespace Ticker {
 
         auto cmap = GetApp().Network.ClientManiaAppPlayground;
         if (!showOnDriving && GetApp().RootMap !is null) {
+            if (GetApp().Editor !is null) return;
             if (cmap.UI.UISequence == CGamePlaygroundUIConfig::EUISequence::Playing && !GetApp().Network.PlaygroundClientScriptAPI.IsInGameMenuDisplayed) {
                 return;
             }
@@ -84,10 +89,8 @@ namespace Ticker {
         UI::DrawList@ dl = UI::GetBackgroundDrawList();
 
         vec4 bgCol = UI::GetStyleColor(UI::Col::MenuBarBg);
-        vec4 bgHoveredCol = UI::GetStyleColor(UI::Col::ButtonHovered);
         vec4 textCol = UI::GetStyleColor(UI::Col::Text);
         vec4 textDisabledCol = UI::GetStyleColor(UI::Col::TextDisabled);
-        vec4 textHoveredCol = UI::GetStyleColor(UI::Col::Text);
         vec2 spacing = UI::GetStyleVarVec2(UI::StyleVar::ItemInnerSpacing);
 
         float height = UI::GetTextLineHeight() + 2*spacing.y;
@@ -112,22 +115,21 @@ namespace Ticker {
                 // i hate everything about this math
                 TickerItem@ ti = tickerItems[item%tickerItems.Length];
                 string tiText = ti.getItemText();
-                vec2 myWidth = Draw::MeasureString(tiText) + spacing*2;
-                float myPos = tickerTextPos.z - myWidth.x - offset - 96.f;
+                vec2 myWidth = Draw::MeasureString(tiText) + (spacing*2);
+                offset -= myWidth.x + tickerItemPadding;
+
+                float myPos = tickerTextPos.z - myWidth.x - offset;
                 vec2 finalPos = vec2(myPos, tickerTextPos.y)+spacing;
                 dl.AddText(finalPos, textCol, tiText);
 
-                vec4 rect(finalPos, myWidth);
+                vec4 rect(vec2(myPos, tickerTextPos.y), myWidth);
                 if (IsHovered(rect)) {
                     ti.OnItemHovered();
                 }
                 
-
                 if (InvisibleButton(rect)) {
                     ti.OnItemClick();
                 }
-
-                offset -= myWidth.x + 96.f;
                 item++;
             }
         }
@@ -144,6 +146,11 @@ namespace Ticker {
             uint len = opTagPlus.Length;
             float percentThroughAnim = 1.f - float(Time::Now - animStartTime - startMS) / float(animMS);
             opTag += opTagPlus.SubStr(0, uint(float(len)*percentThroughAnim));
+        }
+        
+
+        if (isRefreshing) {
+            opTag += " "+Icons::Undo;   
         }
 
         vec2 opTagWidth = Draw::MeasureString(opTag);
