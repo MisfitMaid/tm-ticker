@@ -84,9 +84,9 @@ namespace Ticker {
     void RenderTicker(uint dt) {
         UI::DrawList@ dl = UI::GetBackgroundDrawList();
 
-        vec4 bgCol = UI::GetStyleColor(UI::Col::MenuBarBg) * globalColorMult * bgColMult;
-        vec4 textCol = UI::GetStyleColor(UI::Col::Text) * globalColorMult * textColMult;
-        vec4 textDisabledCol = UI::GetStyleColor(UI::Col::TextDisabled) * globalColorMult * textDisabledColMult;
+        vec4 bgCol = bgColBase * globalColorMult * bgColMult;
+        vec4 textCol = textColBase * globalColorMult * textColMult;
+        vec4 textDisabledCol = textDisabledColBase * globalColorMult * textDisabledColMult;
 
         vec2 spacing = UI::GetStyleVarVec2(UI::StyleVar::ItemInnerSpacing);
         float height = UI::GetTextLineHeight() + 2*spacing.y;
@@ -95,14 +95,73 @@ namespace Ticker {
             tickerPos.y = UI::IsOverlayShown() ? height : 0.f;
         }
 
-        dl.AddRectFilled(tickerPos, bgCol);
 
         if (!IsHovered(tickerPos) || !pauseOnHover) {
             tickerOffsetTime += dt;
         }
 
+        dl.AddRectFilled(tickerPos, bgCol);
+
+
+        // draw t.io blurb
+        string opTag = "\\$3af" + Icons::Heartbeat + "\\$z";
+        string opTagPlus = " Powered by Trackmania.io";
+
+        uint startMS = 5000;
+        uint animMS = 250;
+        if (animStartTime + startMS > Time::Now) {
+            opTag += opTagPlus;
+        } else if (animStartTime + startMS + animMS > Time::Now) {
+            uint len = opTagPlus.Length;
+            float percentThroughAnim = 1.f - float(Time::Now - animStartTime - startMS) / float(animMS);
+            opTag += opTagPlus.SubStr(0, uint(float(len)*percentThroughAnim));
+        }
+        
+
+        if (isRefreshing) {
+            opTag += " "+Icons::Undo;   
+        }
+
+        vec2 opTagWidth = Draw::MeasureString(opTag);
+        vec4 opTagBG(tickerPos.xy, opTagWidth + spacing*2);
+
+        // dl.AddRectFilled(opTagBG, bgCol);
+        dl.AddText(opTagBG.xy + spacing, textDisabledCol, opTag);
+        if (IsHovered(opTagBG)) {
+            animStartTime = Time::Now;
+        }
+        
+
+        if (InvisibleButton(opTagBG)) {
+            OpenBrowserURL("https://trackmania.io");
+        }
+
+
+        // draw taskbar providers
+        vec2 taskbarOffset(tickerPos.z, tickerPos.w+tickerPos.y);
+        TaskbarProvider@[]@ taskbars = getAllTaskbarProviders();
+        for (uint i = 0; i < taskbars.Length; i++) {
+            string content = taskbars[i].getItemText();
+            if (content.Length == 0) continue;
+            vec2 cWid = Draw::MeasureString(content) + spacing*2 + taskbarItemPadding;
+            taskbarOffset = vec2(taskbarOffset.x - cWid.x, taskbarOffset.y);
+            vec4 taskbarBG = vec4(taskbarOffset - vec2(0, cWid.y), cWid) + vec4(taskbarItemPadding.x/2, taskbarItemPadding.y/2, 0, 0);
+            
+            // dl.AddRectFilled(taskbarBG, bgCol);
+            dl.AddText(taskbarBG.xy + spacing, textDisabledCol, content);
+            if (IsHovered(taskbarBG)) {
+                taskbars[i].OnItemHovered();
+            }
+            if (InvisibleButton(taskbarBG)) {
+                taskbars[i].OnItemClick();
+            }
+        }
+
+        vec4 clipping(opTagBG.z, 0, taskbarOffset.x - opTagBG.z, Draw::GetHeight());
+        dl.PushClipRect(clipping);
+
         // draw ticker here
-        vec4 tickerTextPos = tickerPos * vec4(1, 1, 1.5, 1);
+        vec4 tickerTextPos = tickerPos * vec4(1, 1, tickerOverRender, 1);
         float offset = tickerTextPos.z + ((tickerRate * tickerOffsetTime) % tickerTextPos.z);
 
         if (tickerItems.Length > 0) {
@@ -129,60 +188,7 @@ namespace Ticker {
                 item++;
             }
         }
-
-        // draw t.io blurb
-        string opTag = "\\$3af" + Icons::Heartbeat + "\\$z";
-        string opTagPlus = " Powered by Trackmania.io";
-
-        uint startMS = 5000;
-        uint animMS = 250;
-        if (animStartTime + startMS > Time::Now) {
-            opTag += opTagPlus;
-        } else if (animStartTime + startMS + animMS > Time::Now) {
-            uint len = opTagPlus.Length;
-            float percentThroughAnim = 1.f - float(Time::Now - animStartTime - startMS) / float(animMS);
-            opTag += opTagPlus.SubStr(0, uint(float(len)*percentThroughAnim));
-        }
-        
-
-        if (isRefreshing) {
-            opTag += " "+Icons::Undo;   
-        }
-
-        vec2 opTagWidth = Draw::MeasureString(opTag);
-        vec4 opTagBG(tickerPos.xy, opTagWidth + spacing*2);
-
-        dl.AddRectFilled(opTagBG, bgCol);
-        dl.AddText(opTagBG.xy + spacing, textDisabledCol, opTag);
-        if (IsHovered(opTagBG)) {
-            animStartTime = Time::Now;
-        }
-        
-
-        if (InvisibleButton(opTagBG)) {
-            OpenBrowserURL("https://trackmania.io");
-        }
-
-
-        // draw taskbar providers
-        vec2 taskbarOffset(tickerPos.z, tickerPos.w+tickerPos.y);
-        TaskbarProvider@[]@ taskbars = getAllTaskbarProviders();
-        for (uint i = 0; i < taskbars.Length; i++) {
-            string content = taskbars[i].getItemText();
-            if (content.Length == 0) continue;
-            vec2 cWid = Draw::MeasureString(content) + spacing*2 + vec2(10,0);
-            taskbarOffset = vec2(taskbarOffset.x - cWid.x, taskbarOffset.y);
-            vec4 taskbarBG = vec4(taskbarOffset - vec2(0, cWid.y), cWid) + vec4(5, 0, 0, 0);
-            
-            dl.AddRectFilled(taskbarBG, bgCol);
-            dl.AddText(taskbarBG.xy + spacing, textDisabledCol, content);
-            if (IsHovered(taskbarBG)) {
-                taskbars[i].OnItemHovered();
-            }
-            if (InvisibleButton(taskbarBG)) {
-                taskbars[i].OnItemClick();
-            }
-        }
+        dl.PopClipRect();
     }
 
     void RenderDebug() {

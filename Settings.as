@@ -18,13 +18,13 @@ namespace Ticker {
     [Setting category="Display" name="Pause on hover" description="Stop the ticker from moving when hovering over it"]
     bool pauseOnHover = false;
 
-    [Setting category="Display" name="Refresh time (sec)" description="How often to poll for updated items"]
+    [Setting category="Display" drag min=60 name="Refresh time (sec)" description="How often to poll for updated items"]
     uint refreshTime = 300;
 
-    [Setting category="Display" name="Scroll rate" description="How fast to scroll the ticker display (px/ms)"]
+    [Setting category="Display" drag name="Scroll rate" description="How fast to scroll the ticker display (px/ms)"]
     float tickerRate = 0.05f;
 
-    [Setting category="Display" name="Number of items" description="Number of ticker items to display. Set to 0 to show everything available"]
+    [Setting category="Display" drag name="Number of items" description="Number of ticker items to display. Set to 0 to show everything available"]
     uint tickerCount = 15;
 
 
@@ -55,18 +55,34 @@ namespace Ticker {
     [Setting category="Advanced Customization"]
     bool debugMenu = false;
 
-    [Setting category="Advanced Customization"]
+    [Setting category="Advanced Customization" drag min=0.f max=4096.f]
     float tickerItemPadding = 96.f;
+
+    [Setting category="Advanced Customization" drag min=1.f ]
+    float tickerOverRender = 2.5f;
+
+    [Setting category="Advanced Customization" drag]
+    vec2 taskbarItemPadding = vec2(10,0);
 
     [Setting category="Advanced Customization" color]
     vec4 globalColorMult = vec4(1,1,1,1);
 
     [Setting category="Advanced Customization" color]
+    vec4 bgColBase = UI::GetStyleColor(UI::Col::MenuBarBg);
+
+    [Setting category="Advanced Customization" color]
     vec4 bgColMult = vec4(1,1,1,1);
+    
+    [Setting category="Advanced Customization" color]
+    vec4 textColBase = UI::GetStyleColor(UI::Col::Text);
 
     [Setting category="Advanced Customization" color]
     vec4 textColMult = vec4(1,1,1,1);
+    
+    [Setting category="Advanced Customization" color]
+    vec4 textDisabledColBase = UI::GetStyleColor(UI::Col::TextDisabled);
 
     [Setting category="Advanced Customization" color]
     vec4 textDisabledColMult = vec4(1,1,1,1);
+    
 }
