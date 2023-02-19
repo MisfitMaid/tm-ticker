@@ -40,6 +40,8 @@ namespace Ticker {
                 tips[i].OnUpdate();
             }
             isRefreshing = false;
+        } else {
+            return;
         }
 
         tickerItems.Resize(0);
@@ -82,11 +84,11 @@ namespace Ticker {
     void RenderTicker(uint dt) {
         UI::DrawList@ dl = UI::GetBackgroundDrawList();
 
-        vec4 bgCol = UI::GetStyleColor(UI::Col::MenuBarBg);
-        vec4 textCol = UI::GetStyleColor(UI::Col::Text);
-        vec4 textDisabledCol = UI::GetStyleColor(UI::Col::TextDisabled);
-        vec2 spacing = UI::GetStyleVarVec2(UI::StyleVar::ItemInnerSpacing);
+        vec4 bgCol = UI::GetStyleColor(UI::Col::MenuBarBg) * globalColorMult * bgColMult;
+        vec4 textCol = UI::GetStyleColor(UI::Col::Text) * globalColorMult * textColMult;
+        vec4 textDisabledCol = UI::GetStyleColor(UI::Col::TextDisabled) * globalColorMult * textDisabledColMult;
 
+        vec2 spacing = UI::GetStyleVarVec2(UI::StyleVar::ItemInnerSpacing);
         float height = UI::GetTextLineHeight() + 2*spacing.y;
         vec4 tickerPos(0, Draw::GetHeight() - height, Draw::GetWidth(), height);
         if (showOnTop) {

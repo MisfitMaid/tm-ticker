@@ -57,4 +57,16 @@ namespace Ticker {
 
     [Setting category="Advanced Customization"]
     float tickerItemPadding = 96.f;
+
+    [Setting category="Advanced Customization" color]
+    vec4 globalColorMult = vec4(1,1,1,1);
+
+    [Setting category="Advanced Customization" color]
+    vec4 bgColMult = vec4(1,1,1,1);
+
+    [Setting category="Advanced Customization" color]
+    vec4 textColMult = vec4(1,1,1,1);
+
+    [Setting category="Advanced Customization" color]
+    vec4 textDisabledColMult = vec4(1,1,1,1);
 }
