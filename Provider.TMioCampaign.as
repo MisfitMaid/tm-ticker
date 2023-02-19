@@ -67,16 +67,32 @@ namespace Ticker {
 
         TickerItem@[]@ fetchNewRecords() {
             TickerItem@[] allRecords;
+            Net::HttpRequest@[] reqs;
             for (uint i = 0; i < leaderboards.Length; i++) {
-                auto req = Net::HttpGet(leaderboards[i]);
-                while (!req.Finished()) yield();
-                Json::Value lData = Json::Parse(req.String());
+                reqs.InsertLast(Net::HttpGet(leaderboards[i]));
+            }
+            bool allDone = true;
+            for (uint i = 0; i < reqs.Length; i++) {
+                if (!reqs[i].Finished()) allDone = false;
+            }
+            
+            while (!allReqsDone(reqs)) yield();
+
+            for (uint i = 0; i < reqs.Length; i++) {
+                Json::Value lData = Json::Parse(reqs[i].String());
 
                 for (uint k = 0; k < lData.Length; k++) {
                     allRecords.InsertLast(TMIOImprovedTime(lData[k]));
                 }
             }
             return allRecords;
+        }
+
+        bool allReqsDone(Net::HttpRequest@[]@ reqs) {
+            for (uint i = 0; i < reqs.Length; i++) {
+                if (!reqs[i].Finished()) return false;
+            }
+            return true;
         }
     }
 
