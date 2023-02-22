@@ -85,4 +85,19 @@ namespace Ticker {
     [Setting category="Advanced Customization" color]
     vec4 textDisabledColMult = vec4(1,1,1,1);
     
+    [SettingsTab name="Help & Credits" order="2" icon="QuestionCircle"]
+    void RenderSettingsHelp()
+    {
+        UI::TextWrapped("Ticker is currently in early development. If you encounter any issues or have a feature request, please reach out so that I can get it taken care of! :)");
+
+        UI::Separator();
+
+        UI::TextWrapped("If you are interested in supporting this project or just want to say hi, please consider taking a look at the below links "+Icons::Heart);
+
+        UI::Markdown(Icons::Patreon + " [https://patreon.com/MisfitMaid](https://patreon.com/MisfitMaid)");
+        UI::Markdown(Icons::Paypal + " [https://paypal.me/MisfitMaid](https://paypal.me/MisfitMaid)");
+        UI::Markdown(Icons::Github + " [https://github.com/MisfitMaid/tm-ticker](https://github.com/MisfitMaid/tm-ticker)");
+        UI::Markdown(Icons::Discord + " [https://discord.gg/BdKpuFcYzG](https://discord.gg/BdKpuFcYzG)");
+        UI::Markdown(Icons::Twitch + " [https://twitch.tv/MisfitMaid](https://twitch.tv/MisfitMaid)");
+    }
 }
