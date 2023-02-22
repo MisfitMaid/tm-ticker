@@ -70,7 +70,7 @@ namespace Ticker {
     [Setting category="Advanced Customization" color]
     vec4 bgColBase = UI::GetStyleColor(UI::Col::MenuBarBg);
 
-    [Setting category="Advanced Customization" color]
+    [Setting category="Advanced Customization" color description="Change the 4th value here to make the bar transparent"]
     vec4 bgColMult = vec4(1,1,1,1);
     
     [Setting category="Advanced Customization" color]
