@@ -21,6 +21,20 @@ namespace Ticker {
         }
     }
 
+    
+    class Close : TaskbarProvider {
+        string getID() { return "Ticker/Close"; }
+        string getItemText() { 
+            return Icons::WindowClose;
+        }
+
+        void OnItemHovered() {}
+
+        void OnItemClick() {
+            GetApp().TerminateGame();
+        }
+    }
+
     class COTD : TaskbarProvider {
         string getID() { return "Ticker/cotd"; }
         string getItemText() {

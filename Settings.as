@@ -29,6 +29,9 @@ namespace Ticker {
 
 
 
+    [Setting category="Components" name="Close" description="A button to close Trackmania (useful if 'Show on top' is enabled)"]
+    bool enableComponentClose = false;
+
     [Setting category="Components" name="Clock" description="Shows the current time. Requires plugin restart."]
     bool enableComponentClock = true;
 

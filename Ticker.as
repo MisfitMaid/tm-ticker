@@ -22,6 +22,7 @@ namespace Ticker {
         animStartTime = Time::Now;
         @cursedTimeDB = SQLite::Database(":memory:");
 
+        if (enableComponentClose) registerTaskbarProviderAddon(Close());
         if (enableComponentClock) registerTaskbarProviderAddon(Clock());
         if (enableComponentFPS) registerTaskbarProviderAddon(FPS());
         if (enableComponentPing) registerTaskbarProviderAddon(Ping());
