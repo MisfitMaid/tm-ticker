@@ -22,6 +22,8 @@ namespace Ticker {
             while (!req.Finished()) yield();
             Json::Value lData = Json::Parse(req.String())["tops"];
 
+            if (lData.GetType() != Json::Type::Array) return allRecords;
+            
             for (uint k = 0; k < uint(Math::Min(lData.Length, 5)); k++) {
                 allRecords.InsertLast(TMIOTotDImprovedTime(lData[k], mapInfo, cachedtotd));
             }
