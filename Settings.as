@@ -10,7 +10,7 @@ namespace Ticker {
     bool showOnTop = false;
 
     [Setting category="Display" name="Show despite hidden overlay setting" description="Toggle on to keep the tickerbar visible when the Openplanet overlay is disabled"]
-    bool showOnHiddenOverlay = false;
+    bool showOnHiddenOverlay = true;
 
     [Setting category="Display" name="Show when driving" description="Toggle on to show even while driving"]
     bool showOnDriving = false;
