@@ -82,6 +82,8 @@ namespace Ticker {
                 Json::Value lData = Json::Parse(reqs[i].String());
 
                 for (uint k = 0; k < lData.Length; k++) {
+                    if (lData[k]["map"].GetType() == Json::Type::Null) continue;
+                    if (lData[k]["player"].GetType() == Json::Type::Null) continue;
                     allRecords.InsertLast(TMIOImprovedTime(lData[k]));
                 }
             }
