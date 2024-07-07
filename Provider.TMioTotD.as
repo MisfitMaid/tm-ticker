@@ -55,8 +55,8 @@ namespace Ticker {
         }
 
         string getItemText() override {
-            string mapname = StripFormatCodes(map["map"]["name"]) + " (TotD)";
-            string player = StripFormatCodes(data["player"]["name"]);
+            string mapname = Text::StripFormatCodes(map["map"]["name"]) + " (TotD)";
+            string player = Text::StripFormatCodes(data["player"]["name"]);
             string time = Time::Format(data["time"]);
             string at = relTimeStr();
             return "\\$666" + at + " ago:\\$z " + mapname + " \\$666in\\$z " + time + "\\$666 by \\$z" + player;

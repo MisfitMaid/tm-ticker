@@ -111,8 +111,8 @@ namespace Ticker {
         }
 
         string getItemText() override {
-            string map = StripFormatCodes(data["map"]["name"]);
-            string player = StripFormatCodes(data["player"]["name"]);
+            string map = Text::StripFormatCodes(data["map"]["name"]);
+            string player = Text::StripFormatCodes(data["player"]["name"]);
             string time = Time::Format(data["time"]);
             string diff = Time::Format(Math::Abs(int(data["timediff"])), true, false);
             string at = relTimeStr();
