@@ -2,10 +2,10 @@
 name = "Ticker"
 author = "MisfitMaid"
 category = "Overlay"
-version = "0.2.3"
+version = "0.2.4"
 siteid = 332
 
 [script]
-exports = [ "Export.Ticker.as" ]
-shared_exports = [ "ExportShared.Ticker.as" ]
+exports = ["Export.Ticker.as"]
+shared_exports = ["ExportShared.Ticker.as"]
 module = "ticker"
