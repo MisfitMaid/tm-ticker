@@ -5,12 +5,6 @@
  */
 
 namespace Ticker {
-
-    funcdef bool LessSort(const TickerItem@ &in a, const TickerItem@ &in b);
-    bool LessSortFunc(const TickerItem@ &in a, const TickerItem@ &in b) {
-        if (a is null || b is null) return false;
-        return a.getSortTime() > b.getSortTime();
-    }
     
     string OpenplanetColor(vec4 inCol) {
         uint r = uint(Math::Round(inCol.x * 15));

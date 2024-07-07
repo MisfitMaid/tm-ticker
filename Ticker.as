@@ -53,7 +53,12 @@ namespace Ticker {
             }
         }
 
-        if (tickerItems.Length > 1) tickerItems.Sort(LessSort(LessSortFunc));
+        if (tickerItems.Length > 1) {
+            tickerItems.Sort(function(const TickerItem@ const &in a, const TickerItem@ const &in b) {
+                if (a is null || b is null) return false;
+                return a.getSortTime() > b.getSortTime();
+            });
+        }
 
         while (tickerCount > 0 && tickerItems.Length > tickerCount) {
             tickerItems.RemoveAt(tickerCount);
