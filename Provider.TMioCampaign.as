@@ -13,33 +13,28 @@ namespace Ticker {
         void getCampaignList() {
             if (fetchingCampaign) return; // only one at a time pls
             fetchingCampaign = true;
-            auto req = Net::HttpGet("https://trackmania.io/api/campaigns/0");
+            auto req = Net::HttpGet("https://trackmania.io/api/campaigns/seasonal/0");
             while (!req.Finished()) yield();
             Json::Value data = Json::Parse(req.String());
             Json::Value camps = data["campaigns"];
             for (uint i = 0; i < camps.Length; i++) {
                 if (bool(camps[i]['tracked'])) {
                     Json::Value c = camps[i];
-                    string leaderboard = getCampaignLeaderboard(c["id"], c["clubid"]);
+                    string leaderboard = getCampaignLeaderboard(c["id"]);
                     leaderboards.InsertLast("https://trackmania.io/api/leaderboard/activity/" + leaderboard + "/0");
                 }
             }
             fetchingCampaign = false;
         }
 
-        string getCampaignLeaderboard(uint id, uint clubid = 0) {
+        string getCampaignLeaderboard(uint id) {
             if (IO::FileExists(IO::FromStorageFolder("campaigns/"+id))) {
                 IO::File store(IO::FromStorageFolder("campaigns/"+id), IO::FileMode::Read);
                 string lid = store.ReadToEnd();
                 store.Close();
                 return lid;
             }
-            string url;
-            if (clubid == 0) {
-                url = "https://trackmania.io/api/officialcampaign/" + id;
-            } else {
-                url = "https://trackmania.io/api/campaign/" + clubid + "/" + id;
-            }
+            string url = "https://trackmania.io/api/campaign/seasonal/" + id;
             auto req2 = Net::HttpGet(url);
             while (!req2.Finished()) yield();
             Json::Value cData = Json::Parse(req2.String());
