@@ -2,7 +2,7 @@
 name = "Ticker"
 author = "MisfitMaid"
 category = "Overlay"
-version = "0.2.4"
+version = "0.2.5"
 siteid = 332
 
 [script]
