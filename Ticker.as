@@ -168,7 +168,10 @@ namespace Ticker {
 
         // draw ticker here
         vec4 tickerTextPos = tickerPos * vec4(1, 1, tickerOverRender, 1);
-        float offset = tickerTextPos.z + ((tickerRate * tickerOffsetTime) % tickerTextPos.z);
+        float offset = 0;
+        if (tickerTextPos.z != 0) {
+        offset = tickerTextPos.z + ((tickerRate * tickerOffsetTime) % tickerTextPos.z);
+        }
 
         if (tickerItems.Length > 0) {
             uint item = 0;
