@@ -96,7 +96,7 @@ namespace Ticker {
 
         vec2 spacing = UI::GetStyleVarVec2(UI::StyleVar::ItemInnerSpacing);
         float height = UI::GetTextLineHeight() + 2*spacing.y;
-        vec4 tickerPos(0, Draw::GetHeight() - height, Draw::GetWidth(), height);
+        vec4 tickerPos(0, Display::GetHeight() - height, Display::GetWidth(), height);
         if (showOnTop) {
             tickerPos.y = UI::IsOverlayShown() ? height : 0.f;
         }
@@ -128,7 +128,7 @@ namespace Ticker {
             opTag += " "+Icons::Undo;   
         }
 
-        vec2 opTagWidth = Draw::MeasureString(opTag);
+        vec2 opTagWidth = UI::MeasureString(opTag);
         vec4 opTagBG(tickerPos.xy, opTagWidth + spacing*2);
 
         // dl.AddRectFilled(opTagBG, bgCol);
@@ -149,7 +149,7 @@ namespace Ticker {
         for (uint i = 0; i < taskbars.Length; i++) {
             string content = taskbars[i].getItemText();
             if (content.Length == 0) continue;
-            vec2 cWid = Draw::MeasureString(content) + spacing*2 + taskbarItemPadding;
+            vec2 cWid = UI::MeasureString(content) + spacing*2 + taskbarItemPadding;
             taskbarOffset = vec2(taskbarOffset.x - cWid.x, taskbarOffset.y);
             vec4 taskbarBG = vec4(taskbarOffset - vec2(0, cWid.y), cWid) + vec4(taskbarItemPadding.x/2, taskbarItemPadding.y/2, 0, 0);
             
@@ -163,7 +163,7 @@ namespace Ticker {
             }
         }
 
-        vec4 clipping(opTagBG.z, 0, taskbarOffset.x - opTagBG.z, Draw::GetHeight());
+        vec4 clipping(opTagBG.z, 0, taskbarOffset.x - opTagBG.z, Display::GetHeight());
         dl.PushClipRect(clipping);
 
         // draw ticker here
@@ -179,7 +179,7 @@ namespace Ticker {
                 // i hate everything about this math
                 TickerItem@ ti = tickerItems[item%tickerItems.Length];
                 string tiText = ti.getItemText();
-                vec2 myWidth = Draw::MeasureString(tiText) + (spacing*2);
+                vec2 myWidth = UI::MeasureString(tiText) + (spacing*2);
                 offset -= myWidth.x + tickerItemPadding;
 
                 float myPos = tickerTextPos.z - myWidth.x - offset;
